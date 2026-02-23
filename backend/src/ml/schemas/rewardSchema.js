@@ -1,0 +1,1 @@
+// This is reward schema

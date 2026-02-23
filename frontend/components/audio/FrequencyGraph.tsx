@@ -1,0 +1,1 @@
+// This is FrequencyGraph component

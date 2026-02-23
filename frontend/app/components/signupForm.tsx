@@ -43,13 +43,13 @@ export function SignupForm({
 
   const handleChange = (field: string, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    setError(""); // Clear error on input change
   };
 
   const handleNext = () => {
-    // Validate step 1
     if (step === 1) {
       if (!formData.name || !formData.email || !formData.password) {
-        setError("Please fill in all fields");
+        setError("All fields are required");
         return;
       }
       if (formData.password.length < 6) {
@@ -78,57 +78,102 @@ export function SignupForm({
           router.push("/dashboard");
         }, 1500);
       } else {
-        setError(response.error || "Registration failed. Please try again.");
+        setError(response.error || "Registration failed");
       }
     } catch (err: any) {
-      setError(err.message || "Something went wrong. Please try again.");
+      setError(err.message || "Connection failed");
       console.error("Signup error:", err);
     } finally {
       setLoading(false);
     }
   };
 
+  const getStepTitle = () => {
+    switch (step) {
+      case 1:
+        return "Create your account";
+      case 2:
+        return "Personalize your experience";
+      case 3:
+        return "Review & confirm";
+      default:
+        return "";
+    }
+  };
+
+  const getStepDescription = () => {
+    switch (step) {
+      case 1:
+        return "Let's get started with the basics";
+      case 2:
+        return "Help us tailor your experience";
+      case 3:
+        return "Everything looks good?";
+      default:
+        return "";
+    }
+  };
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Create an account</CardTitle>
-          <CardDescription>
-            Step {step} of 3:{" "}
-            {step === 1
-              ? "Personal Info"
-              : step === 2
-              ? "Preferences"
-              : "Review & Submit"}
+      <Card className="border-border/50 shadow-xl">
+        <CardHeader className="space-y-1">
+          <div className="flex items-center justify-between mb-2">
+            <CardTitle className="text-2xl font-bold tracking-tight">
+              {getStepTitle()}
+            </CardTitle>
+            <div className="flex gap-1.5">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "h-1.5 w-8 rounded-full transition-all duration-300",
+                    i === step
+                      ? "bg-primary"
+                      : i < step
+                      ? "bg-primary/50"
+                      : "bg-muted"
+                  )}
+                />
+              ))}
+            </div>
+          </div>
+          <CardDescription className="text-base">
+            {getStepDescription()}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {error && (
-            <div className="text-red-500 text-sm mb-4 p-3 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
-              {error}
+            <div className="flex items-center gap-2 text-sm p-3 mb-4 bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-lg border border-red-200 dark:border-red-900 animate-in fade-in slide-in-from-top-1 duration-300">
+              <span>{error}</span>
             </div>
           )}
           {success && (
-            <div className="text-green-600 text-sm mb-4 p-3 bg-green-50 dark:bg-green-900/20 rounded border border-green-200 dark:border-green-800">
-              ✅ Account created successfully! Redirecting...
+            <div className="flex items-center gap-2 text-sm p-3 mb-4 bg-green-50 dark:bg-green-950/50 text-green-600 dark:text-green-400 rounded-lg border border-green-200 dark:border-green-900 animate-in fade-in slide-in-from-top-1 duration-300">
+              <span>Account created! Welcome aboard 🎉</span>
             </div>
           )}
 
           {/* STEP 1 - Personal Info */}
           {step === 1 && (
-            <div className="grid gap-4">
+            <div className="grid gap-4 animate-in fade-in slide-in-from-right-3 duration-300">
               <div className="grid gap-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name" className="text-sm font-medium">
+                  Full Name
+                </Label>
                 <Input
                   id="name"
                   placeholder="John Doe"
                   value={formData.name}
                   onChange={(e) => handleChange("name", e.target.value)}
                   required
+                  className="h-11"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-sm font-medium">
+                  Email
+                </Label>
                 <Input
                   id="email"
                   type="email"
@@ -136,47 +181,60 @@ export function SignupForm({
                   value={formData.email}
                   onChange={(e) => handleChange("email", e.target.value)}
                   required
+                  className="h-11"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="password">Password (min 6 characters)</Label>
+                <Label htmlFor="password" className="text-sm font-medium">
+                  Password
+                </Label>
                 <Input
                   id="password"
                   type="password"
+                  placeholder="At least 6 characters"
                   value={formData.password}
                   onChange={(e) => handleChange("password", e.target.value)}
                   required
+                  className="h-11"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Must be at least 6 characters long
+                </p>
               </div>
             </div>
           )}
 
           {/* STEP 2 - Preferences */}
           {step === 2 && (
-            <div className="grid gap-4">
+            <div className="grid gap-4 animate-in fade-in slide-in-from-right-3 duration-300">
               <div className="grid gap-2">
-                <Label>Chronotype</Label>
+                <Label className="text-sm font-medium">Chronotype</Label>
                 <Select
                   onValueChange={(val) => handleChange("chronotype", val)}
                   value={formData.chronotype}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your chronotype" />
+                  <SelectTrigger className="h-11">
+                    <SelectValue placeholder="Select your preference" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="morning">Morning Person (Early Bird)</SelectItem>
-                    <SelectItem value="evening">Evening Person (Night Owl)</SelectItem>
-                    <SelectItem value="neutral">Neutral</SelectItem>
+                    <SelectItem value="morning">Morning Person</SelectItem>
+                    <SelectItem value="evening">Night Owl</SelectItem>
+                    <SelectItem value="neutral">Flexible</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Your natural sleep-wake preference
+                  When are you most productive?
                 </p>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="soundSensitivity">
-                  Sound Sensitivity: {formData.soundSensitivity}/10
-                </Label>
+              <div className="grid gap-3">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="soundSensitivity" className="text-sm font-medium">
+                    Sound Sensitivity
+                  </Label>
+                  <span className="text-sm font-semibold text-primary">
+                    {formData.soundSensitivity}/10
+                  </span>
+                </div>
                 <input
                   id="soundSensitivity"
                   type="range"
@@ -202,51 +260,77 @@ export function SignupForm({
 
           {/* STEP 3 - Review */}
           {step === 3 && (
-            <div className="space-y-3 text-sm">
-              <h3 className="font-semibold text-base mb-2">
-                Please review your details:
-              </h3>
-              <div className="grid grid-cols-2 gap-2 p-3 bg-muted rounded">
-                <span className="text-muted-foreground">Name:</span>
-                <span className="font-medium">{formData.name}</span>
-                <span className="text-muted-foreground">Email:</span>
-                <span className="font-medium">{formData.email}</span>
-                <span className="text-muted-foreground">Chronotype:</span>
-                <span className="font-medium capitalize">
-                  {formData.chronotype}
-                </span>
-                <span className="text-muted-foreground">Sound Sensitivity:</span>
-                <span className="font-medium">
-                  {formData.soundSensitivity}/10
-                </span>
+            <div className="space-y-4 animate-in fade-in slide-in-from-right-3 duration-300">
+              <div className="rounded-lg border bg-muted/50 p-4 space-y-3">
+                <div className="flex justify-between items-center py-2 border-b border-border/50">
+                  <span className="text-sm text-muted-foreground">Name</span>
+                  <span className="font-medium">{formData.name}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-border/50">
+                  <span className="text-sm text-muted-foreground">Email</span>
+                  <span className="font-medium">{formData.email}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-border/50">
+                  <span className="text-sm text-muted-foreground">Chronotype</span>
+                  <span className="font-medium capitalize">
+                    {formData.chronotype === "morning"
+                      ? "Morning Person"
+                      : formData.chronotype === "evening"
+                      ? "Night Owl"
+                      : "Flexible"}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-sm text-muted-foreground">
+                    Sound Sensitivity
+                  </span>
+                  <span className="font-medium">{formData.soundSensitivity}/10</span>
+                </div>
               </div>
             </div>
           )}
         </CardContent>
-        <CardFooter className="flex justify-between">
+        <CardFooter className="flex justify-between gap-3">
           {step > 1 ? (
-            <Button variant="outline" onClick={handlePrev} disabled={loading}>
+            <Button
+              variant="outline"
+              onClick={handlePrev}
+              disabled={loading || success}
+              className="h-11"
+            >
               Back
             </Button>
           ) : (
             <div />
           )}
           {step < 3 ? (
-            <Button onClick={handleNext}>Next</Button>
+            <Button onClick={handleNext} className="h-11 ml-auto transition-all duration-200">
+              Next
+            </Button>
           ) : (
-            <Button onClick={handleSubmit} disabled={loading}>
-              {loading ? "Creating Account..." : "Create Account"}
+            <Button
+              onClick={handleSubmit}
+              disabled={loading || success}
+              className="h-11 ml-auto transition-all duration-200"
+            >
+              {loading ? (
+                "Creating..."
+              ) : success ? (
+                "Success!"
+              ) : (
+                "Create Account"
+              )}
             </Button>
           )}
         </CardFooter>
       </Card>
-      <div className="text-center text-sm">
+      <div className="text-center text-sm text-muted-foreground">
         Already have an account?{" "}
         <a
           href="/login"
-          className="underline underline-offset-4 hover:text-primary"
+          className="text-primary font-medium hover:underline underline-offset-4"
         >
-          Login
+          Sign in
         </a>
       </div>
     </div>

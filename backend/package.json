@@ -1,39 +1,27 @@
 {
   "name": "claw-shield-backend",
   "version": "1.0.0",
-  "description": "Backend for Claw Shield",
+  "description": "Backend for Claw Shield - Identity Layer",
   "main": "src/server.js",
+  "type": "module",
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js"
   },
-  "keywords": [],
+  "keywords": ["auth", "jwt", "agent-architecture"],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^1.13.5",
-    "bcrypt": "^6.0.0",
-    "cookie-parser": "^1.4.7",
-    "cors": "^2.8.6",
-    "crypto": "^1.0.1",
-    "csv-parser": "^3.2.0",
-    "dotenv": "^17.3.1",
-    "ethers": "^6.16.0",
-    "express": "^5.2.1",
-    "groq-sdk": "^0.37.0",
-    "helmet": "^8.1.0",
-    "ioredis": "^5.9.3",
-    "joi": "^18.0.2",
-    "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.2.1",
-    "nodemailer": "^8.0.1",
-    "redis": "^5.11.0",
-    "socket.io": "^4.8.3",
-    "socket.io-client": "^4.8.3",
-    "uuid": "^13.0.0",
-    "web-push": "^1.0.2"
+    "express": "^4.18.2",
+    "mongoose": "^8.0.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "joi": "^17.11.0",
+    "dotenv": "^16.3.1",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.0.1"
   }
 }

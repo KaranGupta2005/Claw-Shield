@@ -156,6 +156,8 @@ function inferLocationFromHint(hint) {
     outdoor: { outdoor: 0.8, transit: 0.2 },
     train: { transit: 0.9, commercial: 0.1 },
     bus: { transit: 0.9, commercial: 0.1 },
+    transit: { transit: 0.9, commercial: 0.1 },
+    subway: { transit: 0.9, commercial: 0.1 },
     school: { educational: 0.9, library: 0.1 },
     university: { educational: 0.9, library: 0.1 },
   };

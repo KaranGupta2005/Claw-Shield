@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function SignupForm({
   className,
@@ -71,17 +71,10 @@ export function SignupForm({
     setError("");
 
     try {
-      const response = await signup(formData);
-      if (response.success) {
-        setSuccess(true);
-        setTimeout(() => {
-          router.push("/dashboard");
-        }, 1500);
-      } else {
-        setError(response.error || "Registration failed");
-      }
+      await signup(formData);
+      setSuccess(true);
     } catch (err: any) {
-      setError(err.message || "Connection failed");
+      setError(err.message || "Registration failed");
       console.error("Signup error:", err);
     } finally {
       setLoading(false);

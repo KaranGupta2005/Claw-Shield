@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,14 +12,13 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const router = useRouter();
   const { login } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -32,7 +30,7 @@ export function LoginForm({
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    setError(""); // Clear error on input change
+    setError("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,17 +39,10 @@ export function LoginForm({
     setError("");
 
     try {
-      const response = await login(formData);
-      if (response.success) {
-        setSuccess(true);
-        setTimeout(() => {
-          router.push("/dashboard");
-        }, 1000);
-      } else {
-        setError(response.error || "Invalid credentials");
-      }
+      await login(formData.email, formData.password);
+      setSuccess(true);
     } catch (err: any) {
-      setError(err.message || "Connection failed");
+      setError(err.message || "Invalid credentials");
       console.error("Login error:", err);
     } finally {
       setLoading(false);

@@ -12,6 +12,7 @@ import ExpressError from './middlewares/expressError.js';
 // Import agents for registration
 import * as contextAgent from './agents/contextAgent.js';
 import * as strategyAgent from './agents/strategyAgent.js';
+import * as generationAgent from './agents/generationAgent.js';
 import * as testAgent from './agents/testAgent.js';
 
 dotenv.config();
@@ -57,6 +58,7 @@ connectDB();
 logger.info('🚀 Registering agents...');
 contextAgent.register(eventBus);
 strategyAgent.register(eventBus);
+generationAgent.register(eventBus);
 testAgent.register(eventBus);
 logger.info('✅ All agents registered');
 

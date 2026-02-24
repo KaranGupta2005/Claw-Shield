@@ -64,12 +64,20 @@ async function buildContext(payload) {
   const { userId, preferences, sessionId } = payload;
 
   // Fetch user profile for behavioral traits
-  const user = await User.findById(userId).select(
+  let user = await User.findById(userId).select(
     'chronotype soundSensitivity name email'
   );
 
+  // If user not found (demo session), create a mock user
   if (!user) {
-    throw new Error('User not found');
+    logger.info('🧠 Context Agent: User not found, using demo user', { userId });
+    user = {
+      _id: userId,
+      chronotype: preferences?.chronotype || 'neutral',
+      soundSensitivity: preferences?.soundSensitivity || 5,
+      name: 'Demo User',
+      email: 'demo@clawshield.com',
+    };
   }
 
   // 1. TEMPORAL CONTEXT - Semantic time interpretation
@@ -81,9 +89,9 @@ async function buildContext(payload) {
   if (preferences?.coordinates) {
     const { lat, lng } = preferences.coordinates;
     location = await reverseGeocode(lat, lng);
-  } else if (preferences?.locationHint) {
+  } else if (preferences?.locationHint || preferences?.location) {
     // If user provides a hint like "library" or "home", use it directly
-    location = inferLocationFromHint(preferences.locationHint);
+    location = inferLocationFromHint(preferences.locationHint || preferences.location);
   } else {
     // No location data - use uniform distribution
     location = {

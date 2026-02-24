@@ -1,4 +1,5 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import { protect } from '../middlewares/authMiddleware.js';
 import {
   startSession,
@@ -10,7 +11,14 @@ import wrapAsync from '../middlewares/wrapAsync.js';
 
 const router = express.Router();
 
-// All session routes require authentication
+// Demo route without authentication (for testing)
+router.post('/demo/start', wrapAsync(async (req, res) => {
+  // Create a valid ObjectId for demo user
+  req.user = { _id: new mongoose.Types.ObjectId() };
+  await startSession(req, res);
+}));
+
+// All other session routes require authentication
 router.use(protect);
 
 // POST /api/sessions/start - Start a new session

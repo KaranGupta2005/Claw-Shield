@@ -1,4 +1,5 @@
 import express from 'express';
+import { createServer } from 'http';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -8,6 +9,7 @@ import sessionRoutes from './routes/sessionRoutes.js';
 import eventBus from './core/eventBus.js';
 import logger from './core/logger.js';
 import ExpressError from './middlewares/expressError.js';
+import { initializeSocketServer } from './sockets/socketServer.js';
 
 // Import agents for registration
 import * as contextAgent from './agents/contextAgent.js';
@@ -19,6 +21,7 @@ import * as testAgent from './agents/testAgent.js';
 dotenv.config();
 
 const app = express();
+const httpServer = createServer(app);
 const PORT = process.env.PORT || 5000;
 
 // CORS Configuration
@@ -63,6 +66,9 @@ generationAgent.register(eventBus);
 enforcementBridge.register(eventBus);
 testAgent.register(eventBus);
 logger.info('✅ All agents registered');
+
+// Initialize Socket.IO server for real-time updates
+const io = initializeSocketServer(httpServer, eventBus);
 
 // Routes
 app.get('/', (_, res) => {
@@ -173,9 +179,10 @@ app.use((err, _req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   logger.info(`✅ Server running on port ${PORT}`);
   logger.info(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
   logger.info(`🔔 Event logging: ${process.env.LOG_EVENTS === 'true' ? 'enabled' : 'disabled'}`);
+  logger.info(`🔌 Socket.IO server ready`);
 });
 

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Providers } from "./providers";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -9,8 +9,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Claw Shield - Auth System",
-  description: "Secure authentication for Claw Shield",
+  title: "Claw Shield - Autonomous Agent System",
+  description: "AI-powered binaural beat generation with autonomous reasoning",
 };
 
 export default function RootLayout({
@@ -20,8 +20,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}>
-        <Providers>{children}</Providers>
+      <body className={`${inter.variable} font-sans antialiased bg-black`}>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

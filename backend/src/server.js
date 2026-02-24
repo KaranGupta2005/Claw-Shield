@@ -7,6 +7,7 @@ import authRoutes from './routes/authRoutes.js';
 import sessionRoutes from './routes/sessionRoutes.js';
 import eventBus from './core/eventBus.js';
 import logger from './core/logger.js';
+import ExpressError from './middlewares/expressError.js';
 
 // Import agents for registration
 import * as contextAgent from './agents/contextAgent.js';
@@ -97,13 +98,69 @@ app.use('/api', (req, res) => {
   });
 });
 
-// Error handler
+// Error handler - must be last
 app.use((err, _req, res, next) => {
-  logger.error('❌ Error:', { message: err.message, stack: err.stack });
+  // Log error
+  logger.error('❌ Error:', { 
+    message: err.message, 
+    status: err.status,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+  
+  // Don't send response if headers already sent
+  if (res.headersSent) {
+    return next(err);
+  }
+  
+  // Handle ExpressError instances
+  if (err instanceof ExpressError) {
+    return res.status(err.status).json({
+      success: false,
+      error: err.message
+    });
+  }
+  
+  // Handle validation errors
+  if (err.name === 'ValidationError') {
+    return res.status(400).json({
+      success: false,
+      error: err.message
+    });
+  }
+  
+  // Handle JWT errors
+  if (err.name === 'JsonWebTokenError') {
+    return res.status(401).json({
+      success: false,
+      error: 'Invalid token'
+    });
+  }
+  
+  if (err.name === 'TokenExpiredError') {
+    return res.status(401).json({
+      success: false,
+      error: 'Token expired'
+    });
+  }
+  
+  // Handle MongoDB errors
+  if (err.name === 'CastError') {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid ID format'
+    });
+  }
+  
+  if (err.code === 11000) {
+    return res.status(400).json({
+      success: false,
+      error: 'Duplicate field value entered'
+    });
+  }
+  
+  // Default error
   const status = err.status || 500;
   const message = err.message || 'Internal Server Error';
-  
-  if (res.headersSent) return next(err);
   
   res.status(status).json({
     success: false,

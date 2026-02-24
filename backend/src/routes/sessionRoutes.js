@@ -6,6 +6,7 @@ import {
   getSession,
   getUserSessions,
 } from '../controllers/sessionController.js';
+import wrapAsync from '../middlewares/wrapAsync.js';
 
 const router = express.Router();
 
@@ -13,15 +14,15 @@ const router = express.Router();
 router.use(protect);
 
 // POST /api/sessions/start - Start a new session
-router.post('/start', startSession);
+router.post('/start', wrapAsync(startSession));
 
 // POST /api/sessions/:sessionId/end - End a session
-router.post('/:sessionId/end', endSession);
+router.post('/:sessionId/end', wrapAsync(endSession));
 
 // GET /api/sessions/:sessionId - Get session details
-router.get('/:sessionId', getSession);
+router.get('/:sessionId', wrapAsync(getSession));
 
 // GET /api/sessions - Get user's sessions
-router.get('/', getUserSessions);
+router.get('/', wrapAsync(getUserSessions));
 
 export default router;

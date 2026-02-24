@@ -12,13 +12,21 @@ import ExpressError from '../middlewares/expressError.js';
 export const startSession = async (req, res, next) => {
   const { eventBus } = req.app.locals;
   const userId = req.user._id;
-  const { preferences } = req.body;
+  const { preferences, coordinates, locationHint, intent } = req.body;
+
+  // Build preferences object
+  const sessionPreferences = {
+    ...preferences,
+    coordinates: coordinates ? { lat: coordinates.lat, lng: coordinates.lng } : undefined,
+    locationHint: locationHint || undefined,
+    intent: intent || 'focus',
+  };
 
   // Create session in database
   const session = new Session({
     userId,
     status: 'active',
-    preferences: preferences || {},
+    preferences: sessionPreferences,
     startedAt: new Date(),
   });
 
@@ -27,6 +35,8 @@ export const startSession = async (req, res, next) => {
   logger.info('📍 Session Controller: Session created', {
     sessionId: session._id,
     userId,
+    hasCoordinates: !!coordinates,
+    hasLocationHint: !!locationHint,
   });
 
   // Emit SESSION_STARTED event (agents will react)

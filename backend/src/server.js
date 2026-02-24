@@ -4,6 +4,14 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
+import sessionRoutes from './routes/sessionRoutes.js';
+import eventBus from './core/eventBus.js';
+import logger from './core/logger.js';
+
+// Import agents for registration
+import * as contextAgent from './agents/contextAgent.js';
+import * as strategyAgent from './agents/strategyAgent.js';
+import * as testAgent from './agents/testAgent.js';
 
 dotenv.config();
 
@@ -38,32 +46,48 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Make eventBus available to controllers
+app.locals.eventBus = eventBus;
+
 // Connect to database
 connectDB();
 
+// Register agents (they attach their event listeners)
+logger.info('🚀 Registering agents...');
+contextAgent.register(eventBus);
+strategyAgent.register(eventBus);
+testAgent.register(eventBus);
+logger.info('✅ All agents registered');
+
 // Routes
-app.get('/', (req, res) => {
+app.get('/', (_, res) => {
   res.json({
     message: 'Claw Shield Backend API',
     status: 'healthy',
     timestamp: new Date().toISOString(),
     endpoints: {
       health: '/health',
-      auth: '/api/auth'
+      auth: '/api/auth',
+      sessions: '/api/sessions',
     }
   });
 });
 
-app.get('/health', (req, res) => {
+app.get('/health', (_, res) => {
   res.json({
     status: 'healthy',
     message: 'Backend is running',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    eventBus: {
+      registeredEvents: eventBus.getRegisteredEvents().length,
+      recentEvents: eventBus.getEventLog(5).length,
+    },
   });
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/sessions', sessionRoutes);
 
 // 404 handler
 app.use('/api', (req, res) => {
@@ -74,8 +98,8 @@ app.use('/api', (req, res) => {
 });
 
 // Error handler
-app.use((err, req, res, next) => {
-  console.error('❌ Error:', err);
+app.use((err, _req, res, next) => {
+  logger.error('❌ Error:', { message: err.message, stack: err.stack });
   const status = err.status || 500;
   const message = err.message || 'Internal Server Error';
   
@@ -89,6 +113,8 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
-  console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  logger.info(`✅ Server running on port ${PORT}`);
+  logger.info(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  logger.info(`🔔 Event logging: ${process.env.LOG_EVENTS === 'true' ? 'enabled' : 'disabled'}`);
 });
+
